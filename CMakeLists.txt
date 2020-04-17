@@ -28,8 +28,7 @@ set(SOURCE_FILES
     src/structs.h
     src/find_union.c
     src/find_union.h
-    src/gamma_test.c
-    )
+    src/gamma_test.c)
 
 # Wskazujemy plik wykonywalny.
 add_executable(gamma ${SOURCE_FILES})
