@@ -9,13 +9,7 @@
 #ifndef GAMMA_H
 #define GAMMA_H
 
-#include <stdbool.h>
-#include <stdint.h>
-
-/**
- * Struktura przechowująca stan gry.
- */
-typedef struct gamma gamma_t;
+#include "util.h"
 
 /** @brief Tworzy strukturę przechowującą stan gry.
  * Alokuje pamięć na nową strukturę przechowującą stan gry.
