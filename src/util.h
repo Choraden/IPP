@@ -126,5 +126,10 @@ int get_possible_moves(gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
  */
 void set_possible_moves(gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
 
+/** @brief Liczy liczbę cyfr w liczbie
+ * @param[in] number.
+ * @return liczba cyfr z liczby @p number.
+ */
+uint32_t get_digits_number(uint32_t number);
 
 #endif

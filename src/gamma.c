@@ -72,24 +72,25 @@ gamma_t* gamma_new(uint32_t width, uint32_t height,
 
 
 void gamma_delete(gamma_t *g){
+    if(g != NULL){
+        free(g->players);
 
-    free(g->players);
+        for(uint32_t i = 1; i <= g->height; i++)
+            free(g->tools->visited[i]);
+        free(g->tools->visited); 
 
-    for(uint32_t i = 1; i <= g->height; i++)
-        free(g->tools->visited[i]);
-    free(g->tools->visited); 
+        free(g->tools->parent);
 
-    free(g->tools->parent);
+        free(g->tools);
 
-    free(g->tools);
-
-    for(uint32_t i = 1; i <= g->height; i++)
-        free(g->board[i]);
+        for(uint32_t i = 1; i <= g->height; i++)
+            free(g->board[i]);
 
     
-    free(g->board);
-    free(g);
-
+        free(g->board);
+        free(g);
+    }
+    
     return;
 }
 
@@ -140,7 +141,6 @@ bool gamma_golden_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y){
     uint32_t lost_fields = get_possible_moves(g, old_player, x, y); 
     uint32_t gained_fields = get_possible_moves(g, player, x, y);
     if(set_areas_for_golden_move(g, player, x, y)){
-        
         g->players[old_player].possible_moves -= lost_fields;
         g->players[old_player].taken_fields--;
         g->board[y][x] = player;
@@ -187,10 +187,10 @@ char* gamma_board(gamma_t *g){
 
     uint64_t board_size = (g->height + 1) * (g->width + 1);
     uint64_t it = 0;
+    uint32_t cpy, space, digits = get_digits_number(g->players_number);
     int len;
-    uint32_t cpy;
     char buff[12];
-    char *text = malloc((g->height + 1) * (g->width + 1) * sizeof(char));  
+    char *text = malloc((g->height + 1) * (g->width + 1) * digits * sizeof(char));  
     if(text == NULL)
         return NULL;  
 
@@ -198,17 +198,24 @@ char* gamma_board(gamma_t *g){
         for(uint32_t j = 1; j <= g->width; j++){
             len = 0;
             cpy = g->board[i][j];
+            space = digits;
+
             if(cpy == 0)
                 buff[len++] = '.';
 
             while(cpy != 0){
-
                 buff[len++] = (cpy % 10) + '0';
                 cpy /= 10; 
-            }    
-            for(int k = len - 1; k >= 0; k--){
-                if(it + 3 >= board_size){  
+            }
+            
+            space -= len;
+            while(space > 0){
+                space--;
+                text[it++] = ' ';
+            }
 
+            for(int k = len - 1; k >= 0; k--){
+                if(it + digits + 1 >= board_size){      
                     board_size *= 2; 
                     text = realloc(text, board_size * sizeof(char));
                     if(text == NULL)
@@ -216,7 +223,9 @@ char* gamma_board(gamma_t *g){
                     
                 }
                 text[it++] = buff[k];
+                space--;
             }
+        
             if(g->players_number > 9)
                 text[it++] = ' '; 
                 

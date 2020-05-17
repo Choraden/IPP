@@ -144,7 +144,7 @@ void set_new_parents(gamma_t *g, uint32_t player, uint32_t x, uint32_t y){
     const int y_moves[] = {-1, 0, 1, 0};
     uint32_t arr[4], old_player = g->board[y][x];
     bool old_player_adjoined = false;
-
+    g->players[old_player].divided_fields = 0;
     for(int dir = up; dir <= left; dir++){
         arr[dir] = 0;
         if(check_borders_with_move(g, x, x_moves[dir], y, y_moves[dir])){
@@ -156,9 +156,9 @@ void set_new_parents(gamma_t *g, uint32_t player, uint32_t x, uint32_t y){
             if(act_player == old_player)
                 old_player_adjoined = true;
             
-            if(g->tools->visited[new_y][new_x] == 0
-                && act_player != player 
-                && act_player != 0){
+            if(g->tools->visited[new_y][new_x] == 0 
+            && act_player == old_player
+            && act_player != player){
 
                 g->players[act_player].divided_fields++;
                 dfs_set_new_parents(g,
@@ -184,23 +184,20 @@ bool set_areas_for_golden_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t
 
     const int x_moves[] = {0, 1, 0, -1};
     const int y_moves[] = {-1, 0, 1, 0};
-    uint32_t arr[4]; 
+    uint32_t old_player = g->board[y][x]; 
     // Sprawdza czy przy wyłączeniu pola (x, y) pola nadal są w jednym obszarze. 
+    g->players[old_player].divided_fields = 0;
     for(int dir = up; dir <= left; dir++){
-        arr[dir] = 0;
+
         if(check_borders_with_move(g, x, x_moves[dir], y, y_moves[dir])){
             
             uint32_t new_x = x + x_moves[dir];
             uint32_t new_y = y + y_moves[dir];
             uint32_t act_player = g->board[new_y][new_x];
-            arr[dir] = act_player;
-            if(g->tools->visited[new_y][new_x] == 0
-                && act_player != player 
-                && act_player != 0){
+            if(g->tools->visited[new_y][new_x] == 0 && act_player == old_player){
 
                 g->players[act_player].divided_fields++;
                 uint32_t curr_areas = g->players[act_player].taken_areas;
-
                 if(curr_areas + g->players[act_player].divided_fields - 1 > g->areas)
                     return false;
                 
@@ -208,9 +205,7 @@ bool set_areas_for_golden_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t
             }     
         }
     }
-    for(int i = up; i <= left; i++)
-        g->players[arr[i]].divided_fields = 0;
-    
+
     clear_vis(g);
 
     if(set_areas(g, player, x, y))
@@ -297,4 +292,13 @@ void set_possible_moves(gamma_t *g, uint32_t player, uint32_t x, uint32_t y){
         if(arr[i] != 0)
             g->players[arr[i]].possible_mv_del = false;
 
+}
+
+uint32_t get_digits_number(uint32_t number){
+    int res = 0;
+    while(number != 0){
+        res++;
+        number /= 10;
+    }
+    return res;
 }

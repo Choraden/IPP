@@ -10,7 +10,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-
 enum dir {up = 0, right = 1, down = 2, left = 3};
 enum steps {previous = -1, current = 0, next = 1};
 
