@@ -135,9 +135,9 @@ void print_winners(gamma_t *g){
     printf("%s", p);
     free(p);
     for(uint32_t i = 1; i <= g->players_number; i++){
-        printf("PLAYER:");
+        printf("GRACZ:");
         printf("%" PRIu32 " ", i);
-        printf("TAKEN FIELDS: ");
+        printf("ZAJĘTE POLA: ");
         printf("%" PRIu64 "\n", gamma_busy_fields(g, i));
     }
     printf("\x1B[?25h"); 
