@@ -2,6 +2,7 @@
  * Interfejs klasy przechowującej stan gry gamma
  *
  * @author Marcin Peczarski <marpe@mimuw.edu.pl>
+ * @author Hubert Grochowski hg417878
  * @copyright Uniwersytet Warszawski
  * @date 18.03.2020
  */
@@ -83,14 +84,11 @@ uint64_t gamma_busy_fields(gamma_t *g, uint32_t player);
  */
 uint64_t gamma_free_fields(gamma_t *g, uint32_t player);
 
-/** @brief Sprawdza, czy gracz może wykonać złoty ruch.
- * Sprawdza, czy gracz @p player jeszcze nie wykonał w tej rozgrywce złotego
- * ruchu i jest przynajmniej jedno pole zajęte przez innego gracza.
+/** @brief Sprawdza, czy gracz @p player może wykonać złoty ruch.
  * @param[in] g       – wskaźnik na strukturę przechowującą stan gry,
  * @param[in] player  – numer gracza, liczba dodatnia niewiększa od wartości
  *                      @p players z funkcji @ref gamma_new.
- * @return Wartość @p true, jeśli gracz jeszcze nie wykonał w tej rozgrywce
- * złotego ruchu i jest przynajmniej jedno pole zajęte przez innego gracza,
+ * @return Wartość @p true, jeśli gracz może wyoknać złoty ruch,
  * a @p false w przeciwnym przypadku.
  */
 bool gamma_golden_possible(gamma_t *g, uint32_t player);

@@ -56,7 +56,17 @@ uint64_t get_adjoined(gamma_t *g, uint32_t player, uint32_t x, int move_x, uint3
  */
 void dfs(gamma_t *g, uint32_t player, uint32_t x, uint32_t y, uint32_t ignore_x, uint32_t ignore_y);
 
-/** @brief Czyści tablice odwiedzonych w dfs
+
+/** @brief Sprawdza czy gracz moze wykonać złoty ruch na danym polu.
+ * @param[in] g - wskaźnik na strukturę przechowującą stan gry,
+ * @param[in] player - gracz wykonujący ruch,
+ * @param[in] x - szerokość pola,
+ * @param[in] y - wysokość pola.
+ * @return true - jeśli gracz moze wykonac złoty ruch, false w przeciwnym przypadku.
+ */
+bool is_golden_possible(gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
+
+/** @brief Czyści tablice odwiedzonych w dfs.
  * @param[in, out] g - wskaźnik na strukturę przechowującą stan gry.
  */
 void clear_vis (gamma_t *g);

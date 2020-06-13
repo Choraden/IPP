@@ -9,6 +9,14 @@
 #include <stdint.h>
 #include <ctype.h>
 
+/** @brief Sprawdza czy liczba mieści się w zakresie uint32_t.
+ * @param[in] digits - wskaźnik na tablicę cyfr,
+ * @param[in] size - rozmiar tablicy cyrf.
+ * @return true jeśli liczba mieści się w zakresie uint32_t,
+ * false w przeciwnym przypadku.
+ */ 
+int is_int32(int *digits, int size);
+
 /** @brief Funkcja przyjmuje wprowadzone polecenia po czym 
  * sprawdza poprawność i zwraca odpowiedni kod.
  * @param[in] cnt - liczba poleceń.

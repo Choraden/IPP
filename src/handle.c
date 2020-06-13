@@ -1,23 +1,36 @@
 #include "handle.h"
 
+int is_int32(int *digits, int size){
+    uint64_t res_64 = 0;
+    uint32_t res_32 = 0;
+    int res = 1;
+    for(int i = 0; i < size; i++)
+        res_64 = i == size - 1 ? res_64 + digits[i] - '0' : (res_64 + digits[i] - '0') * 10;
+
+    res_32 = res_64;
+    if(res_32 != res_64)
+        res = 0;
+    
+    return res;
+}
+
+
 int is_number(int *order, int size){
     int res = 1;
     for(int i = 0; i < size; i++)
         if(!isdigit(order[i]))
             res = 0;
     
+    if(res == 1)
+        res = is_int32(order, size);
+
     return res;
 }
 
 uint32_t calculate_number(int *digits, int size){
-    uint64_t res_64 = 0;
     uint32_t res_32 = 0;
     for(int i = 0; i < size; i++)
-        res_64 = i == size - 1 ? res_64 + digits[i] - '0' : (res_64 + digits[i] - '0') * 10;
-
-    res_32 = res_64;
-    if(res_32 != res_64)
-        res_32 = 0;
+        res_32 = i == size - 1 ? res_32 + digits[i] - '0' : (res_32 + digits[i] - '0') * 10;
     
     return res_32;
 }

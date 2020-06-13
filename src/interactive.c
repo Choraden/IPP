@@ -26,6 +26,36 @@ static inline void restoreCursorPosition(){
     printf("\x1b%d", 8);
 }
 
+/** @brief Wypisuje czerowny tekst na czarnym tle.
+ */
+static inline void printRed(){
+    printf("\x1b[31m\x1b[40m");
+}
+
+/** @brief Wypisuje zielony tekst na czarnym tle.
+ */
+static inline void PrintGreen(){
+    printf("\x1b[32m\x1b[40m");
+}
+
+/** @brief Ukrywa kursor.
+ */  
+static inline void hideCursor(){
+    printf("\x1B[?25l");
+}
+
+/** @brief Ukazuje kursor.
+ */
+static inline void showCursor(){
+    printf("\x1B[?25h"); 
+}
+
+/** @brief Podświetla pole.
+ */
+static inline void highlight(){
+    printf("\x1b[30m\x1b[46m");
+}
+
 /** @brief Liczy wielkość kroku o jaki mamy przesuać się na planszy.
  * @param[in] players_number - największy numer gracza.
  * @return Długość kroku.
@@ -45,7 +75,7 @@ static inline uint32_t set_step(uint32_t players_number){
  * @return pozycja początkowa.
  */
 static inline uint32_t set_start_pos(uint32_t x){
-    x /= 2;
+    x = (x + 1) / 2;
 
     if(x == 0)
         x++;
@@ -72,14 +102,34 @@ static inline bool check_player(gamma_t *g, uint32_t player){
 static inline int getche(){
     struct termios oldattr, newattr;
     int ch;
-    tcgetattr( STDIN_FILENO, &oldattr );
+    if(tcgetattr(STDIN_FILENO, &oldattr) != 0){
+        clear();
+        printf("Program niespodziwanie zakończył proces.\n");
+        exit(1);
+    }
+        
+
     newattr = oldattr;
     newattr.c_lflag &= ~( ICANON | ECHO); 
-    tcsetattr( STDIN_FILENO, TCSANOW, &newattr );
+    if(tcsetattr(STDIN_FILENO, TCSANOW, &newattr) != 0){
+        clear();
+        printf("Program niespodziwanie zakończył proces.\n");
+        exit(1);
+    }
+        
+
     system("stty -echo"); 
     ch = getchar();
     system("stty echo");
-    tcsetattr( STDIN_FILENO, TCSANOW, &oldattr );
+
+
+    if(tcsetattr(STDIN_FILENO, TCSANOW, &oldattr) != 0){
+        clear();
+        printf("Program niespodziwanie zakończył proces.\n");
+        exit(1);
+    }
+        
+
     return ch;
 }
 
@@ -92,10 +142,17 @@ static inline void print_player_info(gamma_t *g, uint32_t player){
         printf("DOSTĘPNE POLA:");
         printf("%" PRIu64 "\n", gamma_free_fields(g, player));
         bool temp = gamma_golden_possible(g, player);
-        if(temp)
+        if(temp){
+            PrintGreen();
             printf("ZŁOTY RUCH DOSTĘPNY");
-        else 
+            reset();
+        }
+        else{
+            printRed();
             printf("ZŁOTY RUCH NIEDOSTĘPNY");
+            reset();
+        }
+            
     }
 }
 
@@ -115,7 +172,7 @@ static void print(gamma_t *g, uint32_t x, uint32_t y, uint32_t player, uint32_t 
     print_player_info(g, player);
     printf("\x1b[%d;%dH", y_console, x_console);
     saveCursorPosition();
-    printf("\x1b[30m\x1b[46m");
+    highlight();
     if(g->board[y][x] == 0)
         printf(".");
     else 
@@ -123,7 +180,7 @@ static void print(gamma_t *g, uint32_t x, uint32_t y, uint32_t player, uint32_t 
     
     
     reset();
-    printf("\x1B[?25l"); 
+    hideCursor();
     fflush(stdout);
     restoreCursorPosition();
     
@@ -140,14 +197,43 @@ void print_winners(gamma_t *g){
         printf("ZAJĘTE POLA: ");
         printf("%" PRIu64 "\n", gamma_busy_fields(g, i));
     }
-    printf("\x1B[?25h"); 
+    showCursor();
 }
 
+/** @brief Sprawdza czy okno terminalu jest odpowiednio duze
+ *  do przeprowadzenia rozgrywki.
+ * @param[in] height - wysokość planszy,
+ * @param[in] width - szerokość planszy,
+ * @param[in] players - największy numer gracza,
+ * @param[in] row - wysokość terminalu,
+ * @param[in] col - szerokość terminal
+ * @return true jeśli okno jest wystarczająco duze,
+ * false w przeciwnym przypadku.
+ */
+static bool check_terminal_size(int height, int width, int players, int row, int col){
+    int res = true;
+    if(height + 5 > row)
+        res = false;
+    
+    int step = set_step(players);
+    int length = width * (step == 1 ? 1 : step + 1);
+
+    if(length > col)
+        res = false;
+
+    return res;
+}
 void interactive(gamma_t *g){
     uint32_t x = set_start_pos(g->width), y = set_start_pos(g->height);
     uint32_t eliminated = 0;
     uint32_t step = set_step(g->players_number);
     int player_is_moving, k, playing = 1;
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    if(check_terminal_size(g->height, g->width, g->players_number, w.ws_row, w.ws_col) == false){
+        printf("Okno terminalu jest zbyt małe aby przeprowadzić rozgrywkę.\n");
+        exit(1);
+    }
     
     while(playing){
         for(uint32_t i = 1; i <= g->players_number; i++){

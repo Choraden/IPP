@@ -6,7 +6,12 @@ gamma_t* gamma_new(uint32_t width, uint32_t height,
     if(width <= 0 || height <= 0|| players <= 0 || areas <= 0)
         return NULL;
 
+    if(width + 1 == 0 || height + 1 == 0 || players + 1 == 0)
+        return NULL;
+        
     gamma_t *new_game = malloc(1 * sizeof(gamma_t));
+    if(new_game == NULL)
+        return NULL;
 
     new_game->width = width;
     new_game->height = height;
@@ -122,8 +127,16 @@ bool gamma_golden_possible(gamma_t *g, uint32_t player){
 
     if(g->players[player].golden_done)
         return false;
+
+    for(uint32_t i = 1; i <= g->height; i++){
+        for(uint32_t j = 1; j <= g->width; j++){
+            if(g->board[i][j] != 0 && g->board[i][j] != player)
+                if(is_golden_possible(g, player, j, i) == true)
+                    return true;
+        }
+    }
         
-    return true;
+    return false;
 }
 
 bool gamma_golden_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y){
@@ -131,12 +144,12 @@ bool gamma_golden_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y){
     x = x + 1;
     y = y + 1;
     
-    if  (!check_conditions(g, player, x, y) 
-        || !gamma_golden_possible(g, player)
-        || g->board[y][x] == 0 
-        || g->board[y][x] == player
-        ) 
+    if(!check_conditions(g, player, x, y) || g->board[y][x] == 0 || g->board[y][x] == player) 
         return false;
+    
+    if(g->players[player].golden_done)
+        return false;
+
     uint32_t old_player = g->board[y][x];
     uint32_t lost_fields = get_possible_moves(g, old_player, x, y); 
     uint32_t gained_fields = get_possible_moves(g, player, x, y);
@@ -148,6 +161,7 @@ bool gamma_golden_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y){
         g->players[player].taken_fields++;
         g->players[player].golden_done = true;
         clear_vis(g);
+
     }else{
         clear_vis(g);
         return false;

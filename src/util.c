@@ -75,6 +75,40 @@ void clear_vis (gamma_t *g){
     }
 }
 
+bool is_golden_possible(gamma_t *g, uint32_t player, uint32_t x, uint32_t y){
+    const int x_moves[] = {0, 1, 0, -1};
+    const int y_moves[] = {-1, 0, 1, 0};
+    uint32_t old_player = g->board[y][x]; 
+    bool new_area = true;
+    // Sprawdza czy przy wyłączeniu pola (x, y) pola nadal są w jednym obszarze. 
+    g->players[old_player].divided_fields = 0;
+    for(int dir = up; dir <= left; dir++){
+        if(check_borders_with_move(g, x, x_moves[dir], y, y_moves[dir])){
+            uint32_t new_x = x + x_moves[dir];
+            uint32_t new_y = y + y_moves[dir];
+            uint32_t act_player = g->board[new_y][new_x];
+            if(act_player == player)
+                new_area = false;
+
+            if(g->tools->visited[new_y][new_x] == 0 && act_player == old_player){
+                g->players[act_player].divided_fields++;
+                uint32_t curr_areas = g->players[act_player].taken_areas;
+                if(curr_areas + g->players[act_player].divided_fields - 1 > g->areas)
+                    return false;
+                
+                dfs(g, act_player, new_x, new_y, x, y);
+            }     
+        }
+    }
+
+    clear_vis(g);
+
+    if(new_area == true && g->players[player].taken_areas + 1 > g->areas)
+        return false;
+    
+    return true;
+}
+
 bool set_areas(gamma_t *g, uint32_t player, uint32_t x, uint32_t y){
 
     
@@ -142,17 +176,14 @@ void set_new_parents(gamma_t *g, uint32_t player, uint32_t x, uint32_t y){
 
     const int x_moves[] = {0, 1, 0, -1};
     const int y_moves[] = {-1, 0, 1, 0};
-    uint32_t arr[4], old_player = g->board[y][x];
+    uint32_t old_player = g->board[y][x];
     bool old_player_adjoined = false;
     g->players[old_player].divided_fields = 0;
     for(int dir = up; dir <= left; dir++){
-        arr[dir] = 0;
         if(check_borders_with_move(g, x, x_moves[dir], y, y_moves[dir])){
-
             uint32_t new_x = x + x_moves[dir];
             uint32_t new_y = y + y_moves[dir];
             uint32_t act_player = g->board[new_y][new_x];
-            arr[dir] = act_player;
             if(act_player == old_player)
                 old_player_adjoined = true;
             
@@ -171,42 +202,18 @@ void set_new_parents(gamma_t *g, uint32_t player, uint32_t x, uint32_t y){
             }     
         }
     }
-    for(int i = up; i <= left; i++){
-        if(g->players[arr[i]].divided_fields != 0)
-            g->players[arr[i]].taken_areas += (g->players[arr[i]].divided_fields - 1);
-        g->players[arr[i]].divided_fields = 0;
-    }
+    if(g->players[old_player].divided_fields != 0)
+        g->players[old_player].taken_areas += (g->players[old_player].divided_fields - 1);
+    g->players[old_player].divided_fields = 0;
+    
     if(!old_player_adjoined)
         g->players[old_player].taken_areas--;
 }
 
 bool set_areas_for_golden_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y){
 
-    const int x_moves[] = {0, 1, 0, -1};
-    const int y_moves[] = {-1, 0, 1, 0};
-    uint32_t old_player = g->board[y][x]; 
-    // Sprawdza czy przy wyłączeniu pola (x, y) pola nadal są w jednym obszarze. 
-    g->players[old_player].divided_fields = 0;
-    for(int dir = up; dir <= left; dir++){
-
-        if(check_borders_with_move(g, x, x_moves[dir], y, y_moves[dir])){
-            
-            uint32_t new_x = x + x_moves[dir];
-            uint32_t new_y = y + y_moves[dir];
-            uint32_t act_player = g->board[new_y][new_x];
-            if(g->tools->visited[new_y][new_x] == 0 && act_player == old_player){
-
-                g->players[act_player].divided_fields++;
-                uint32_t curr_areas = g->players[act_player].taken_areas;
-                if(curr_areas + g->players[act_player].divided_fields - 1 > g->areas)
-                    return false;
-                
-                dfs(g, act_player, new_x, new_y, x, y);
-            }     
-        }
-    }
-
-    clear_vis(g);
+    if(is_golden_possible(g, player, x, y) == false)
+        return false;
 
     if(set_areas(g, player, x, y))
         set_new_parents(g, player, x, y);
@@ -223,7 +230,6 @@ int is_already_possible(gamma_t *g, uint32_t player, uint32_t x, uint32_t y, int
     const int x_moves[] = {0, 1, 0, -1};
     const int y_moves[] = {-1, 0, 1, 0};
     for(int i = previous; i <= next; i++){
-
         act_dir = dir + i;
 
         if(act_dir < 0)
@@ -302,3 +308,4 @@ uint32_t get_digits_number(uint32_t number){
     }
     return res;
 }
+

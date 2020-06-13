@@ -2,7 +2,7 @@
 #include "interactive.h"
 
 void READ(){
-    int i, poz = 0, cnt = 0, ignore = 0, size[6], memSize[6];
+    int i, poz = 0, cnt = 0, ignore = 0, size[6] = {0, 0, 0, 0, 0, 0}, memSize[6];
     int last = ' ', *com[6], first = 0, mode = 0, white = 0;
     unsigned int line = 1;
     gamma_t *g = NULL;
@@ -18,10 +18,24 @@ void READ(){
         if(first == 0 && i == '#')
             ignore = 1;
 
+        if(first == 0 && isspace(i) && i != '\n')
+            cnt = 2;
+        
+
         first = 1;
 
         // Jesli jest to koniec linii sprawdza warunki brzegowe i przekazuje komendy do wykonania.
         if(i == '\n'){
+            
+            /*printf("LINE: %d ", line);
+            for(int k = 0; k < 6; k++){
+                for(int l = 0; l < size[k]; l++){
+                    printf("%c ", com[k][l]);
+                }
+                
+            }
+            printf("\n");
+            */
             if((cnt > 5 && ignore == 0) || (white == 1 && cnt == 0)) 
                 fprintf(stderr, "ERROR %u\n", line); 
 
@@ -62,7 +76,6 @@ void READ(){
                     uint32_t player = calculate_number(com[1], size[1]);
                     uint32_t x = calculate_number(com[2], size[2]);
                     uint32_t y = calculate_number(com[3], size[3]);
-
                     if(player == 0)
                         fprintf (stderr, "ERROR %u\n", line); 
 

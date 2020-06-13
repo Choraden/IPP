@@ -11,6 +11,7 @@
 #include "handle.h"
 #include <termios.h>
 #include <unistd.h>
+#include <sys/ioctl.h>
 
 /** @brief Funkcja wczytuje akcje uzytkownika oraz 
  * na nie reaguje.
