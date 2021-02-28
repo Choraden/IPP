@@ -26,16 +26,6 @@ void READ(){
 
         // Jesli jest to koniec linii sprawdza warunki brzegowe i przekazuje komendy do wykonania.
         if(i == '\n'){
-            
-            /*printf("LINE: %d ", line);
-            for(int k = 0; k < 6; k++){
-                for(int l = 0; l < size[k]; l++){
-                    printf("%c ", com[k][l]);
-                }
-                
-            }
-            printf("\n");
-            */
             if((cnt > 5 && ignore == 0) || (white == 1 && cnt == 0)) 
                 fprintf(stderr, "ERROR %u\n", line); 
 
